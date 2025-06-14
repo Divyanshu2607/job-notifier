@@ -50,6 +50,8 @@ def send_telegram_message(message):
 
 # === MAIN LOGIC ===
 def main():
+    send_telegram_message("✅ Bot is connected and working. Starting job search...")  # 🔔 Debug/Test Message
+
     print("🔍 Fetching fresher jobs...")
     seen_ids = load_old_jobs()
     new_ids = set()
