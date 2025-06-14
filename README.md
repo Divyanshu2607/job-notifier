@@ -52,4 +52,6 @@ TELEGRAM_TOKEN=your_telegram_bot_token
 TELEGRAM_CHAT_ID=your_telegram_chat_id
 
 ## Run the Script
+```bash
 python main.py
+```
