@@ -28,6 +28,7 @@ def fetch_jobs(query):
         return response.json().get("results", [])
     else:
         print(f"❌ Error fetching for '{query}': {response.status_code}")
+        print(f"Response: {response.text}")
         return []
 
 # === LOAD OLD JOBS ===
@@ -44,15 +45,31 @@ def save_jobs(job_ids):
 
 # === TELEGRAM NOTIFIER ===
 def send_telegram_message(message):
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        print("⚠️ TELEGRAM_TOKEN or TELEGRAM_CHAT_ID not set. Skipping message.")
+        return
+
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     data = {"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "HTML"}
-    requests.post(url, data=data)
+
+    try:
+        response = requests.post(url, data=data)
+        if response.status_code != 200:
+            print(f"❌ Failed to send Telegram message: {response.status_code}")
+            print(f"Response: {response.text}")
+        else:
+            print("✅ Telegram message sent successfully.")
+    except Exception as e:
+        print(f"❌ Exception while sending Telegram message: {e}")
 
 # === MAIN LOGIC ===
 def main():
-    send_telegram_message("✅ Bot is connected and working. Starting job search...")  # 🔔 Debug/Test Message
-    print(f"🔍 DEBUG: ADZUNA_APP_ID = {ADZUNA_APP_ID}")
-    print(f"🔍 DEBUG: ADZUNA_APP_KEY = {ADZUNA_APP_KEY}")
+    print("🔍 DEBUG: ADZUNA_APP_ID =", "Set" if ADZUNA_APP_ID else "Not Set")
+    print("🔍 DEBUG: ADZUNA_APP_KEY =", "Set" if ADZUNA_APP_KEY else "Not Set")
+    print("🔍 DEBUG: TELEGRAM_TOKEN =", "Set" if TELEGRAM_TOKEN else "Not Set")
+    print("🔍 DEBUG: TELEGRAM_CHAT_ID =", TELEGRAM_CHAT_ID)
+
+    send_telegram_message("🔔 Bot is connected. Starting job search...")
 
     print("🔍 Fetching fresher jobs...")
     seen_ids = load_old_jobs()
