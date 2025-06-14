@@ -43,7 +43,8 @@ git clone ...
 ```bash
 git clone https://github.com/Divyanshu2607/job-notifier.git
 cd job-notifier
-
+```
+---
 ## 📦 env variables
 ADZUNA_APP_ID=your_adzuna_app_id
 ADZUNA_APP_KEY=your_adzuna_app_key
