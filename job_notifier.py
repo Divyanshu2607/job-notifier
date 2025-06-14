@@ -1,7 +1,6 @@
 import requests
 import json
 import os
-from datetime import datetime
 
 # === CONFIGURATION ===
 ADZUNA_APP_ID = os.getenv("ADZUNA_APP_ID")
@@ -54,14 +53,11 @@ def send_telegram_message(message):
         response = requests.post(url, data=data)
         if response.status_code != 200:
             print(f"❌ Failed to send Telegram message: {response.status_code}")
-            print(f"Response: {response.text}")
     except Exception as e:
         print(f"❌ Exception while sending Telegram message: {e}")
 
 # === MAIN LOGIC ===
 def main():
-    send_telegram_message("🔔 Bot is connected. Starting job search...")
-
     seen_ids = load_old_jobs()
     new_ids = set()
     all_new_jobs = []
@@ -75,7 +71,7 @@ def main():
                 all_new_jobs.append(job)
 
     if all_new_jobs:
-        print(f"🆕 New job postings found: {len(all_new_jobs)}")
+        send_telegram_message(f"🔔 {len(all_new_jobs)} new jobs found. Sending details...")
         for job in all_new_jobs:
             msg = (
                 f"<b>{job['title']}</b>\n"
@@ -85,7 +81,7 @@ def main():
             )
             send_telegram_message(msg)
     else:
-        print("ℹ️ No new jobs found.")
+        send_telegram_message("ℹ️ No new jobs found today.")
 
     save_jobs(seen_ids.union(new_ids))
 
