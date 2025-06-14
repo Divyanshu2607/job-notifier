@@ -16,8 +16,8 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 def fetch_jobs(query):
     url = f"https://api.adzuna.com/v1/api/jobs/{COUNTRY}/search/1"
     params = {
-        "app_id": APPLICATION_ID,
-        "app_key": APPLICATION_KEY,
+        "app_id": ADZUNA_APP_ID,
+        "app_key": ADZUNA_APP_KEY,
         "results_per_page": 20,
         "what": query,
         "content-type": "application/json"
@@ -84,5 +84,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# //for checking if the script is running correctly
