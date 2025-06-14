@@ -84,3 +84,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# //for checking if the script is running correctly
