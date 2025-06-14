@@ -28,7 +28,6 @@ def fetch_jobs(query):
         return response.json().get("results", [])
     else:
         print(f"❌ Error fetching for '{query}': {response.status_code}")
-        print(f"Response: {response.text}")
         return []
 
 # === LOAD OLD JOBS ===
@@ -46,7 +45,6 @@ def save_jobs(job_ids):
 # === TELEGRAM NOTIFIER ===
 def send_telegram_message(message):
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        print("⚠️ TELEGRAM_TOKEN or TELEGRAM_CHAT_ID not set. Skipping message.")
         return
 
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
@@ -57,35 +55,24 @@ def send_telegram_message(message):
         if response.status_code != 200:
             print(f"❌ Failed to send Telegram message: {response.status_code}")
             print(f"Response: {response.text}")
-        else:
-            print("✅ Telegram message sent successfully.")
     except Exception as e:
         print(f"❌ Exception while sending Telegram message: {e}")
 
 # === MAIN LOGIC ===
 def main():
-    print("🔍 DEBUG: ADZUNA_APP_ID =", "Set" if ADZUNA_APP_ID else "Not Set")
-    print("🔍 DEBUG: ADZUNA_APP_KEY =", "Set" if ADZUNA_APP_KEY else "Not Set")
-    print("🔍 DEBUG: TELEGRAM_TOKEN =", "Set" if TELEGRAM_TOKEN else "Not Set")
-    print("🔍 DEBUG: TELEGRAM_CHAT_ID =", TELEGRAM_CHAT_ID)
-
     send_telegram_message("🔔 Bot is connected. Starting job search...")
 
-    print("🔍 Fetching fresher jobs...")
     seen_ids = load_old_jobs()
     new_ids = set()
     all_new_jobs = []
 
     for query in SEARCH_TERMS:
-        print(f"🔍 Searching jobs for: {query}")
         jobs = fetch_jobs(query)
         for job in jobs:
             job_id = job["id"]
             if job_id not in seen_ids:
                 new_ids.add(job_id)
                 all_new_jobs.append(job)
-
-    print(f"✅ Total jobs fetched: {len(all_new_jobs)}")
 
     if all_new_jobs:
         print(f"🆕 New job postings found: {len(all_new_jobs)}")
@@ -98,9 +85,8 @@ def main():
             )
             send_telegram_message(msg)
     else:
-        print("ℹ️ No new jobs. Nothing to send.")
+        print("ℹ️ No new jobs found.")
 
-    # Save updated list
     save_jobs(seen_ids.union(new_ids))
 
 if __name__ == "__main__":
