@@ -1,0 +1,12 @@
+services:
+  - type: worker
+    name: register-bot-worker
+    runtime: python
+    repo: https://github.com/<your-username>/<your-repo-name>
+    branch: main
+    startCommand: python register_bot.py
+    envVars:
+      - key: TELEGRAM_TOKEN
+        sync: false
+      - key: FIREBASE_KEY_JSON
+        sync: false

@@ -2,27 +2,39 @@ import requests
 import json
 import os
 from datetime import datetime
+import firebase_admin
+from firebase_admin import credentials, db
 
 # === CONFIGURATION ===
 ADZUNA_APP_ID = os.getenv("ADZUNA_APP_ID")
 ADZUNA_APP_KEY = os.getenv("ADZUNA_APP_KEY")
-COUNTRY = "in"  # India
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+COUNTRY = "in"
 SEARCH_TERMS = ["fresher", "0 years experience", "entry level", "graduate"]
 OLD_JOBS_FILE = os.path.join(os.path.dirname(__file__), "adzuna_jobs.json")
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+# === FIREBASE INITIALIZATION ===
+cred = credentials.Certificate("firebase_key.json")
+firebase_admin.initialize_app(cred, {
+    'databaseURL': "https://jobnotifierbot-default-rtdb.asia-southeast1.firebasedatabase.app/"
+})
+
+# === LOAD CHAT IDS FROM FIREBASE ===
+def load_chat_ids():
+    ref = db.reference("/chat_ids")
+    data = ref.get()
+    return list(data.keys()) if data else []
 
 # === FETCH JOBS FROM ADZUNA ===
 def fetch_jobs(query):
     url = f"https://api.adzuna.com/v1/api/jobs/{COUNTRY}/search/1"
     params = {
-        "app_id": APPLICATION_ID,
-        "app_key": APPLICATION_KEY,
+        "app_id": ADZUNA_APP_ID,
+        "app_key": ADZUNA_APP_KEY,
         "results_per_page": 20,
         "what": query,
         "content-type": "application/json"
     }
-
     response = requests.get(url, params=params)
     if response.status_code == 200:
         return response.json().get("results", [])
@@ -44,9 +56,16 @@ def save_jobs(job_ids):
 
 # === TELEGRAM NOTIFIER ===
 def send_telegram_message(message):
+    chat_ids = load_chat_ids()
+    if not chat_ids:
+        print("⚠️ No chat IDs found.")
+        return
+
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    data = {"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "HTML"}
-    requests.post(url, data=data)
+    for chat_id in chat_ids:
+        data = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
+        response = requests.post(url, data=data)
+        print(f"🔔 Sent to {chat_id} → Status: {response.status_code}")
 
 # === MAIN LOGIC ===
 def main():
@@ -79,10 +98,7 @@ def main():
     else:
         print("ℹ️ No new jobs. Nothing to send.")
 
-    # Save updated list
     save_jobs(seen_ids.union(new_ids))
 
 if __name__ == "__main__":
     main()
-
-# //for checking if the script is running correctly
