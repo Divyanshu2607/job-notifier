@@ -5,13 +5,14 @@ from firebase_admin import credentials, db
 import json
 import io
 
-# === Load Firebase credentials from ENV ===
+# === Load and parse Firebase key from ENV ===
 firebase_json = os.getenv("FIREBASE_KEY_JSON")
-cred = credentials.Certificate(io.StringIO(firebase_json))
+firebase_dict = json.loads(firebase_json)
+cred = credentials.Certificate(firebase_dict)
+
 firebase_admin.initialize_app(cred, {
     'databaseURL': "https://jobnotifierbot-default-rtdb.asia-southeast1.firebasedatabase.app/"
 })
-
 # === Telegram Bot Init ===
 BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN)
