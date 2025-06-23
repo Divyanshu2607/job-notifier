@@ -31,6 +31,8 @@ def fetch_jobs(query):
     params = {
         "app_id": ADZUNA_APP_ID,
         "app_key": ADZUNA_APP_KEY,
+        "app_id": ADZUNA_APP_ID,
+        "app_key": ADZUNA_APP_KEY,
         "results_per_page": 20,
         "what": query,
         "content-type": "application/json"
@@ -69,13 +71,11 @@ def send_telegram_message(message):
 
 # === MAIN LOGIC ===
 def main():
-    print("🔍 Fetching fresher jobs...")
     seen_ids = load_old_jobs()
     new_ids = set()
     all_new_jobs = []
 
     for query in SEARCH_TERMS:
-        print(f"🔍 Searching jobs for: {query}")
         jobs = fetch_jobs(query)
         for job in jobs:
             job_id = job["id"]
@@ -83,10 +83,8 @@ def main():
                 new_ids.add(job_id)
                 all_new_jobs.append(job)
 
-    print(f"✅ Total jobs fetched: {len(all_new_jobs)}")
-
     if all_new_jobs:
-        print(f"🆕 New job postings found: {len(all_new_jobs)}")
+        send_telegram_message(f"🔔 {len(all_new_jobs)} new jobs found. Sending details...")
         for job in all_new_jobs:
             msg = (
                 f"<b>{job['title']}</b>\n"
@@ -96,7 +94,7 @@ def main():
             )
             send_telegram_message(msg)
     else:
-        print("ℹ️ No new jobs. Nothing to send.")
+        send_telegram_message("ℹ️ No new jobs found today.")
 
     save_jobs(seen_ids.union(new_ids))
 
