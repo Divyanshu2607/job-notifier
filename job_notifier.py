@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import base64
 from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, db
@@ -14,7 +15,9 @@ SEARCH_TERMS = ["fresher", "0 years experience", "entry level", "graduate"]
 OLD_JOBS_FILE = os.path.join(os.path.dirname(__file__), "adzuna_jobs.json")
 
 # === FIREBASE INITIALIZATION ===
-cred = credentials.Certificate("firebase_key.json")
+firebase_b64 = os.getenv("FIREBASE_KEY_B64")
+firebase_json = base64.b64decode(firebase_b64).decode("utf-8")
+cred = credentials.Certificate(json.loads(firebase_json))
 firebase_admin.initialize_app(cred, {
     'databaseURL': "https://jobnotifierbot-default-rtdb.asia-southeast1.firebasedatabase.app/"
 })
@@ -29,8 +32,6 @@ def load_chat_ids():
 def fetch_jobs(query):
     url = f"https://api.adzuna.com/v1/api/jobs/{COUNTRY}/search/1"
     params = {
-        "app_id": ADZUNA_APP_ID,
-        "app_key": ADZUNA_APP_KEY,
         "app_id": ADZUNA_APP_ID,
         "app_key": ADZUNA_APP_KEY,
         "results_per_page": 20,
